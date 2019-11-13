@@ -1,0 +1,25 @@
+ULTIBOARD DRILL REPORT
+
+Design: TCD_SHM_0
+
+DRILL FILE SETTINGS
+Excellon 2, Absolute, Metric, 3.4 
+
+
+DEFINITION COPPER LAYERS
+Copper Top
+Copper Bottom
+
+
+--------------------------------------------------------------------
+
+DRILLFILE                                  LAMINATION
+TCD_SHM_0 - Copper Top-Copper Bottom.drl   Copper Top .. Copper Bottom
+
+TOOL     SIZE   TYPE  COUNT
+   1   0.2500    PTH    135
+   2   0.4000    PTH      4
+   3   4.8000   NPTH      4
+   4   1.0000    PTH    262
+   5   0.8890    PTH     11
+   6   0.9949    PTH      1
