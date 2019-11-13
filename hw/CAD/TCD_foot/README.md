@@ -4,11 +4,11 @@
 This is the STL source file for a pretty clean and simple foot the the TimeCircuitDisplay PCB.
 There is an inclination of 25° of the display so it is better readable on a table.
 
-![Time Circuit Display Foot](https://github.com/lochej/TimeCircuitDisplay/blob/master/hw/CAD/TCD_foot/TCD_foot_LEFT.JPG)
+![Time Circuit Display Foot](./TCD_foot_LEFT.JPG)
 
 This only is the **LEFT** foot when facing the PCB, so you need to **mirror** the part in you slicer to create the **RIGHT** foot.
 
-**You need to do so to make sure that the grove for the 7-segments displays's pins are not in the way. **
+**You need to do so to make sure that the grove for the 7-segments displays's pins are not in the way.**
 
 *The part is not symmetric.*
 
