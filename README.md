@@ -1,4 +1,4 @@
-# What is it ? 
+# Time Circuit Display Board 
 
 This is my version of the famous Time Circuit Display showcased in **Back to the Future** movies.
 
