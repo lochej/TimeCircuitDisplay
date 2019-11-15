@@ -2,6 +2,8 @@
 
 This is a driving program written in ARM DS-5 IDE (Eclipse IDE with CDT extensions) and compiled with GCC 4.x minimum.
 
+It displays current system local time using the **time.h** library and userspare **i2c driver**.
+
 *You have to enable C dialect = C99.*
 
 
@@ -27,3 +29,22 @@ In the main function, modify the **hdev.address=0** value to your A2:A1:A0 bits 
 
 1. argument 1 : 0 = turns OFF the display, 1 to 16 sets the brightness of the display, higher values will just saturate to 16.
 1. argument 2 : your i2c device: if not provided by default it will use /dev/i2c-1 
+
+
+It used the **/dev/i2c-1** specified in the **ht16k33.c** file. It runs on DE0-Nano-Soc on the photo.
+
+The program takes an argument which is the brightness of the display:
+1. 0=Minimum brightness
+2. 15=Maximum brightness
+
+**Examples:**
+```
+#Turn the display ON full brightness on dev i2c-0
+./TimeCircuitDisplay 16 /dev/i2c-0
+
+#This time with i2c-1
+./TimeCircuitDisplay 16 /dev/i2c-1
+
+#Turn the display OFF
+./TimeCircuitDisplay 0 /dev/i2c-1
+```
