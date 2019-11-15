@@ -2,7 +2,7 @@
  * timecircuitdisplay.h
  *
  *  Created on: 15 oct. 2019
- *      Author: LOCHE Jeremy
+ *      Author: JLH
  */
 
 #ifndef TIMECIRCUITDISPLAY_H_

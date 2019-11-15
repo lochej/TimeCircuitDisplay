@@ -2,7 +2,7 @@
  * timecircuitdisplay.c
  *
  *  Created on: 15 oct. 2019
- *      Author: LOCHE Jeremy
+ *      Author: JLH
  */
 #include "timecircuitdisplay.h"
 #include "segments16_ascii.h"
@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 
-static void tcd_setDualDigitValue(timecircuit_t * dev,uint8_t value,uint8_t com)
+static int8_t tcd_setDualDigitValue(timecircuit_t * dev,uint8_t value,uint8_t com)
 {
 	uint8_t asciiUnits= '0' + (value%10);
 	uint8_t asciiDiz= '0' + (value/10);
@@ -24,22 +24,24 @@ static void tcd_setDualDigitValue(timecircuit_t * dev,uint8_t value,uint8_t com)
 
 	//ht16k33 MSB=LED15 LSB=LED0
 	ht16k33_setRow(dev->ht16k33_dev,bus,com);
-	ht16k33_refreshRow(dev->ht16k33_dev,com);
+	return ht16k33_refreshRow(dev->ht16k33_dev,com);
 }
+
+/**
+ * Init the time circuit display
+ * @param dev
+ * @return same return codes as ht16k33_init
+ */
 int8_t tcd_init(timecircuit_t * dev)
 {
 
-	ht16k33_init(dev->ht16k33_dev);
-
-
-	return 0;
+	return ht16k33_init(dev->ht16k33_dev);
 }
 
 //2*7seg hours
 int8_t tcd_setHours(timecircuit_t *dev,uint8_t hours)
 {
-	tcd_setDualDigitValue(dev, hours, 6);
-	return 0;
+	return tcd_setDualDigitValue(dev, hours, 6);
 }
 
 //2*7seg minutes
@@ -49,15 +51,20 @@ int8_t tcd_setMinutes(timecircuit_t * dev, uint8_t minutes)
 	//Minutes on COM7
 	//MSD Row [7:0] COM7
 	//LSD Row [15:8] COM7
-	tcd_setDualDigitValue(dev, minutes, 7);
-	return 0;
+	return tcd_setDualDigitValue(dev, minutes, 7);
 }
 
 //2*7seg hours  + 2*7seg minutes
 int8_t tcd_setHoursMinutes(timecircuit_t *dev,uint8_t hours,uint8_t minutes)
 {
-	tcd_setHours(dev, hours);
-	tcd_setMinutes(dev, minutes);
+	int8_t res=0;
+	res=tcd_setHours(dev, hours);
+	if(res)
+		return res;
+	res=tcd_setMinutes(dev, minutes);
+	if(res)
+		return res;
+
 	return 0;
 }
 
@@ -67,17 +74,16 @@ int8_t tcd_setDays(timecircuit_t * dev, uint8_t days)
 
 	//MSD Row [7:0] COM3
 	//LSD Row [15:8] COM3
-	tcd_setDualDigitValue(dev, days, 3);
-	return 0;
+	return tcd_setDualDigitValue(dev, days, 3);
 }
 
 //4*7seg year
 int8_t tcd_setYear(timecircuit_t * dev,uint16_t year)
 {
-	//MSD Row [7:0] COM4
-	//MSD Row [15:8] COM4 //2 first digits XXxx
-	//LSD Row [7:0] COM5
-	//LSD Row [15:8] COM5 //2 low digits xxXX
+	//MSD Row [7:0] COM5
+	//MSD Row [15:8] COM5 //2 first digits XXxx
+	//LSD Row [7:0] COM4
+	//LSD Row [15:8] COM4 //2 low digits xxXX
 
 	tcd_setDualDigitValue(dev, year/100,5);
 	tcd_setDualDigitValue(dev, year%100,4);
@@ -99,8 +105,7 @@ int8_t tcd_setMonthAscii(timecircuit_t *dev,char * month)
 	//ht16k33_refreshRow(dev->ht16k33_dev, 0);
 	//ht16k33_refreshRow(dev->ht16k33_dev, 1);
 	//ht16k33_refreshRow(dev->ht16k33_dev, 2);
-	ht16k33_writeRAM_N(dev->ht16k33_dev, 0, 2*3);
-	return 0;
+	return ht16k33_writeRAM_N(dev->ht16k33_dev, 0, 2*3);
 }
 
 //3*16seg month -> numeric version
@@ -112,8 +117,7 @@ int8_t tcd_setMonthNumber(timecircuit_t *dev,uint8_t month)
 	month/=1000;
 	sprintf(tmp,"%03d",month);
 
-	tcd_setMonthAscii(dev, tmp);
-	return 0;
+	return tcd_setMonthAscii(dev, tmp);
 }
 
 //Common function to set month
@@ -178,9 +182,8 @@ int8_t tcd_setAMPM(timecircuit_t *dev,uint8_t ampm)
   ht16k33_setPixel(dev->ht16k33_dev,7,6,ampm & 0x1 ? 1:0);
   ht16k33_setPixel(dev->ht16k33_dev,15,6,ampm & 0x2 ? 1:0);
   
-  ht16k33_refreshRow(dev->ht16k33_dev,6);
+  return ht16k33_refreshRow(dev->ht16k33_dev,6);
 
-  return 0;
 }
 
 int8_t tcd_setDots(timecircuit_t *dev,uint8_t dots)
@@ -188,8 +191,7 @@ int8_t tcd_setDots(timecircuit_t *dev,uint8_t dots)
    ht16k33_setPixel(dev->ht16k33_dev,7,7,dots & 0x1 ? 1:0);
   ht16k33_setPixel(dev->ht16k33_dev,15,7,dots & 0x2 ? 1:0);
   
-  ht16k33_refreshRow(dev->ht16k33_dev,7);
-  return 0;
+  return ht16k33_refreshRow(dev->ht16k33_dev,7);
 }
 
 int8_t tcd_refresh()

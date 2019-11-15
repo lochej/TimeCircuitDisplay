@@ -2,7 +2,7 @@
  * main.c
  *
  *  Created on: Oct 24, 2019
- *      Author: LOCHE Jeremy
+ *      Author: fpga
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +10,12 @@
 #include <time.h>
 #include "timecircuitdisplay.h"
 
+//Conflicts with IOCTL
+#define MAX_NB_ERRORS_IOCTL 1
+#define MAX_NB_ERRORS_I2C 5
+#define TIMEOUT_SEC_NO_ERROR_COUNTER_RESET 10
+
+#define REFRESH_PERIOD_MS 250
 ht16k33_t hdev={0};
 timecircuit_t htcd={0};
 uint8_t cnt_hours=0;
@@ -21,23 +27,136 @@ uint8_t cnt_seconds=0;
 uint16_t cnt_ms=0;
 uint8_t brightness=0;
 
+
+/**
+ * Prints an error message and its result code and exiting the software with specified exit code
+ * @param cause_msg
+ * @param cause_result_code
+ * @param exit_code
+ */
+void errorExit(char * cause_msg, int cause_result_code,int exit_code)
+{
+	if(cause_result_code)
+	{
+		printf("Fatal error cause exit : %s with res_code:%d\n",cause_msg,cause_result_code);
+		exit(exit_code);
+	}
+}
+
+/**
+ * Checks and counts errors on the TCD commands. If too many I2C errors or IOCTL errors occur, then the program will exit with an error.
+ * @param cause_msg
+ * @param cause_result_code
+ */
+void check_tcd_errors(char * cause_msg,int cause_result_code)
+{
+	static uint8_t ioctl_error_count=0;
+	static uint8_t i2c_write_error_count=0;
+
+	static time_t last_error_time=0;
+	//static uint8_t first_check=1;
+
+	//Not robust to change in date of the system ?
+#if 0
+	//first call of the function, init last_error_time;
+	if(first_check){
+		first_check=0;
+		last_error_time=time(NULL);
+	}
+
+	//If it has been more than 10 seconds without i2c errors, reset the counter.
+	if(time(NULL) - last_error_time >= TIMEOUT_SEC_NO_ERROR_COUNTER_RESET)
+	{
+		last_error_time=time(NULL);
+		i2c_write_error_count=0;
+		ioctl_error_count=0;
+	}
+#endif
+
+	//No errors
+	if(cause_result_code==0)
+		return;
+
+	switch(cause_result_code)
+	{
+	case -1: //IOCTL acquire errors
+		ioctl_error_count++;
+
+		//register error our and date
+		last_error_time=time(NULL);
+
+		printf("Error %d/%d IOCTL acquire registered for %s with code=%d\n",ioctl_error_count,MAX_NB_ERRORS_IOCTL,cause_msg,cause_result_code);
+		printf("Is it a /dev/i2c-* device ?\n");
+
+		if(ioctl_error_count >= MAX_NB_ERRORS_IOCTL){
+			printf("Reached max IOCTL errors\n");
+			errorExit(cause_msg, cause_result_code, EXIT_FAILURE);
+			return;
+		}
+
+		break;
+	case -2: //I2C write failed, because no component responding ACK on the line
+		i2c_write_error_count++;
+
+		//register error our and date
+		last_error_time=time(NULL);
+
+		printf("Error %d / %d I2C write registered for %s with code=%d\n",i2c_write_error_count,MAX_NB_ERRORS_I2C,cause_msg,cause_result_code);
+
+		if(i2c_write_error_count >= MAX_NB_ERRORS_I2C){
+			printf("Reached max I2C write errors\n");
+			errorExit(cause_msg, cause_result_code, EXIT_FAILURE);
+			return;
+		}
+
+		break;
+	case -3: //I2C not the correct amount of bytes written to I2C. Possibly a programming error.
+		printf("Error I2C not write correct nb of bytes for %s with code=%d\n",cause_msg,cause_result_code);
+		errorExit(cause_msg, cause_result_code, EXIT_FAILURE);
+		break;
+	}
+}
+/**
+ * Time Circuit Display with arguments
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc,char ** argv)
 {
-	printf("Hello World from Time Circuit\n");
+	int res;
+	printf("Time Circuit Display driving program\n");
 
-	if(argc > 1)
-	{
-		brightness=(uint8_t) atoi(argv[1]);
+	//Check for program arguments
+	if(argc < 2){
+		printf("Usage is : argv[1]=brightness optionnal argv[2]=i2c_dev file\n");
+		printf("Brightness value of 0 means display OFF\n");
+		printf("Brightness value of 1 (min) to 16 (max) starts the display with brightness\n");
+		printf("i2c file should be provided as parameter 2, if not /dev/i2c-1 will be chosen\n");
+		return -1;
 	}
-	else
-		brightness=15;
 
+	//Parse brightness
+	if(argc > 1){
+		brightness=(uint8_t) strtol(argv[1],NULL,10);
+	}
+	else{
+		brightness=16;
+	}
 
+	hdev.i2c_dev_file= argc >= 3 ? argv[2] : "/dev/i2c-1";
 
 	htcd.ht16k33_dev=&hdev;
 
+	res = tcd_init(&htcd); //could crash because i2c file open failed, couldn't write to device,
 
-	tcd_init(&htcd);
+	check_tcd_errors("tcd_init()", res);
+
+	if(brightness == 0){
+		ht16k33_displayOn(&hdev, brightness == 0 ? 0 : 1);
+		printf("Turning display OFF\n");
+		exit(EXIT_SUCCESS);
+	}
 
 	/*
 	tcd_setDays(&htcd,cnt_days);
@@ -46,12 +165,16 @@ int main(int argc,char ** argv)
 	tcd_setHoursMinutes(&htcd,cnt_hours,cnt_minutes);
 	tcd_setDots(&htcd,cnt_seconds);
 	tcd_setAMPM(&htcd,0);
-	*/
-	ht16k33_setBrightness(htcd.ht16k33_dev, brightness);
+	 */
+	printf("Turning display ON\n");
+	printf("Setting TCD brightness to %d\n",brightness);
 
-	printf("Config TCD Done\n");
+	res = ht16k33_setBrightness(htcd.ht16k33_dev, brightness-1);
 
-	int i =0;
+	errorExit("ht16k33_setBrightness() failed", res, EXIT_FAILURE);
+
+
+	printf("Displaying time every %d ms\n",REFRESH_PERIOD_MS);
 
 	time_t now=time(NULL);
 	struct tm * time_fields;
@@ -61,37 +184,70 @@ int main(int argc,char ** argv)
 		now=time(NULL);
 		time_fields=localtime(&now);
 
-
-
 		if(cnt_days != time_fields->tm_mday)
 		{
-			cnt_days=time_fields->tm_mday;
-			tcd_setDays(&htcd,cnt_days);
+
+			res=tcd_setDays(&htcd,time_fields->tm_mday);
+
+			check_tcd_errors("tcd_setDays()", res);
+
+			//Applied days correctly
+			if(!res)
+				cnt_days=time_fields->tm_mday;
+
 		}
 
 		if(cnt_months!=time_fields->tm_mon+1)
 		{
-			cnt_months=time_fields->tm_mon+1;
-			tcd_setMonth(&htcd,cnt_months,TCD_MONTH_ASCII);
+
+			res=tcd_setMonth(&htcd,time_fields->tm_mon+1,TCD_MONTH_ASCII);
+
+			check_tcd_errors("tcd_setMonth()",res);
+
+			if(!res)
+				cnt_months=time_fields->tm_mon+1;
+
+
 		}
 
 		if(cnt_year!=(time_fields->tm_year+1900))
 		{
-			cnt_year=time_fields->tm_year+1900;
-			tcd_setYear(&htcd,cnt_year);
+
+			res=tcd_setYear(&htcd,(time_fields->tm_year+1900));
+
+			check_tcd_errors("tcd_setYear()",res);
+
+			if(!res)
+				cnt_year=time_fields->tm_year+1900;
+
+
 		}
 
 		if(cnt_hours!=time_fields->tm_hour)
 		{
-			cnt_hours=time_fields->tm_hour;
-			tcd_setHours(&htcd, cnt_hours);
-			tcd_setAMPM(&htcd, cnt_hours > 12 ? 0x2: 0x1);
+
+			res=tcd_setHours(&htcd, time_fields->tm_hour);
+
+			check_tcd_errors("tcd_setHours()",res);
+			if(!res)
+				cnt_hours=time_fields->tm_hour;
+
+
+
+			res=tcd_setAMPM(&htcd, cnt_hours > 12 ? 0x2: 0x1);
+
+			check_tcd_errors("tcd_setAMPM()",res);
 		}
 
 		if(cnt_minutes!=time_fields->tm_min)
 		{
-			cnt_minutes=time_fields->tm_min;
-			tcd_setMinutes(&htcd, cnt_minutes);
+
+			res=tcd_setMinutes(&htcd, time_fields->tm_min);
+
+			if(!res)
+				cnt_minutes=time_fields->tm_min;
+
+			check_tcd_errors("tcd_setMinutes()",res);
 		}
 
 		if(cnt_seconds != time_fields->tm_sec)
@@ -102,10 +258,13 @@ int main(int argc,char ** argv)
 			//tcd_setAMPM(&htcd,cnt_seconds);
 		}
 
-		tcd_setDots(&htcd,cnt_ms/250);
+		res=tcd_setDots(&htcd,cnt_ms/REFRESH_PERIOD_MS);
 
-		usleep(250*1000);
-		cnt_ms+=250;
+		check_tcd_errors("tcd_setDots()",res);
+
+		usleep(REFRESH_PERIOD_MS*1000);
+
+		cnt_ms+=REFRESH_PERIOD_MS;
 	}
 
 	return 0;

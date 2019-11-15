@@ -2,7 +2,7 @@
  * ht16k33.h
  *
  *  Created on: 13 oct. 2019
- *      Author: LOCHE Jeremy
+ *      Author: JLH
  */
 
 #ifndef HT16K33_H_
@@ -52,9 +52,12 @@ extern "C" {
 
 struct ht16k33_dev_struct
 {
+	char * i2c_dev_file;
+	int i2c_fd;
 	uint8_t address; //A2 A1 A0 bits in this order
 	uint8_t status;
 	uint8_t ram_data[HT16K33_RAM_SIZE];
+
 };
 
 typedef struct ht16k33_dev_struct ht16k33_t;

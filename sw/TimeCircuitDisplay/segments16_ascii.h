@@ -2,7 +2,7 @@
  * 16segments_ascii.h
  *
  *  Created on: 15 oct. 2019
- *      Author: LOCHE Jeremy
+ *      Author: JLH
  */
 
 #ifndef SEGMENTS16_ASCII_H_
