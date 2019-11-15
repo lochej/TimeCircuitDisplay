@@ -19,7 +19,8 @@ Connect the Time Circuit Display to you SBC i2c port.
 The program uses address default 0x70 for the HT16K33 chip.
 Make sure yours is set to the same, or change it in the program:
 
-**Hint**
+**Hint**:
+
 In the main function, modify the **hdev.address=0** value to your A2:A1:A0 bits configured on the HT16K33 adafruit breakout.
 
 **Program Arguments** 
