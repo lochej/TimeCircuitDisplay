@@ -144,6 +144,7 @@ int main(int argc,char ** argv)
 		brightness=16;
 	}
 
+	hdev.address=0; //Change to the A2:A1:A0 bits of your Time circuit
 	hdev.i2c_dev_file= argc >= 3 ? argv[2] : "/dev/i2c-1";
 
 	htcd.ht16k33_dev=&hdev;

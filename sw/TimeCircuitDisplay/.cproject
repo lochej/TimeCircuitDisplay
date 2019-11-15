@@ -26,7 +26,7 @@
 							<tool id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.tool.c.compiler.base.exe.debug.219600336" name="GCC C Compiler 4 [arm-linux-gnueabihf]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.tool.c.compiler.base.exe.debug">
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.1737625138" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option defaultValue="gnu.c.debugging.level.default" id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.tool.c.compiler.base.exe.debug.base.option.debugging.level.282302036" name="Debug Level" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.tool.c.compiler.base.exe.debug.base.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
-								<option id="gnu.c.compiler.option.dialect.std.1533220203" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.c99" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.dialect.std.1533220203" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.c99" valueType="enumerated"/>
 								<inputType id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.tool.c.compiler.base.input.326484418" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.tool.c.compiler.base.input"/>
 							</tool>
 							<tool id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.tool.assembler.base.exe.debug.41597411" name="GCC Assembler 4 [arm-linux-gnueabihf]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.tool.assembler.base.exe.debug">
