@@ -30,13 +30,6 @@ In the main function, modify the **hdev.address=0** value to your A2:A1:A0 bits 
 1. argument 1 : 0 = turns OFF the display, 1 to 16 sets the brightness of the display, higher values will just saturate to 16.
 1. argument 2 : your i2c device: if not provided by default it will use /dev/i2c-1 
 
-
-It used the **/dev/i2c-1** specified in the **ht16k33.c** file. It runs on DE0-Nano-Soc on the photo.
-
-The program takes an argument which is the brightness of the display:
-1. 0=Minimum brightness
-2. 15=Maximum brightness
-
 **Examples:**
 ```
 #Turn the display ON full brightness on dev i2c-0
