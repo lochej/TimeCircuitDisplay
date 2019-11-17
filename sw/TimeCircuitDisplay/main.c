@@ -18,11 +18,11 @@
 #define REFRESH_PERIOD_MS 250
 ht16k33_t hdev={0};
 timecircuit_t htcd={0};
-uint8_t cnt_hours=0;
-uint8_t cnt_minutes=0;
-uint8_t cnt_days=0;
-uint8_t cnt_months=0;
-uint16_t cnt_year=0;
+uint8_t cnt_hours=88; //set all default values to 88, ensures a first set in the while loop.
+uint8_t cnt_minutes=88;
+uint8_t cnt_days=88;
+uint8_t cnt_months=88;
+uint16_t cnt_year=8888;
 uint8_t cnt_seconds=0;
 uint16_t cnt_ms=0;
 uint8_t brightness=0;
