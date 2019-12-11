@@ -1,5 +1,7 @@
 ### C ###
 # C output files
+#Keep the gitignore
+
 # Prerequisites
 *.d
 
@@ -7,8 +9,9 @@
 *.o
 
 # Eclipse temp makefiles
-sw/.*
-sw/debugger
-sw/*/Debug/makefile
+/.*
+/debugger
+/*/Debug/makefile
 *.mk
 
+!/.gitignore
