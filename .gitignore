@@ -1,0 +1,14 @@
+### C ###
+# C output files
+# Prerequisites
+*.d
+
+# Object files
+*.o
+
+# Eclipse temp makefiles
+sw/.*
+sw/debugger
+sw/*/Debug/makefile
+*.mk
+
